@@ -14,7 +14,8 @@ def get_demographics(df, method):
         for col in df.columns
         if col.startswith(f"{method}_")
     ]
-    
+
+
 ### correlations with bootstrapped confidence intervals ###
 def correlation_coefficient(x, y):
     r, _ = pearsonr(x, y)
@@ -36,7 +37,11 @@ def bootstrap_correlation(data: pd.DataFrame) -> Tuple[float, float]:
 
 
 def analyze_correlations_bootstrap(
-    dataset_name: str, df: pd.DataFrame, models: List[str], alpha: float = 0.05, method: str = "average"
+    dataset_name: str,
+    df: pd.DataFrame,
+    models: List[str],
+    alpha: float = 0.05,
+    method: str = "average",
 ) -> pd.DataFrame:
     demographics = get_demographics(df, method)
     results = []
@@ -58,9 +63,7 @@ def analyze_correlations_bootstrap(
             try:
                 ci_lower, ci_upper = bootstrap_correlation(data)
             except Exception as e:
-                print(
-                    f"bootstrap failed for {demo_col} and {model}. error: {str(e)}"
-                )
+                print(f"bootstrap failed for {demo_col} and {model}. error: {str(e)}")
                 ci_lower, ci_upper = np.nan, np.nan
 
             results.append(
@@ -77,9 +80,7 @@ def analyze_correlations_bootstrap(
             )
 
     if not results:
-        print(
-            f"no valid results for {method} method."
-        )
+        print(f"no valid results for {method} method.")
         return pd.DataFrame()
 
     results_df = pd.DataFrame(results)
@@ -90,18 +91,18 @@ def analyze_correlations_bootstrap(
 
 
 ### correlations with fisher's z transformation ###
-def fisher_z_transformation(x: np.ndarray, y: np.ndarray, alpha: float = 0.05) -> Tuple[float, float, float, float]:
+def fisher_z_transformation(
+    x: np.ndarray, y: np.ndarray, alpha: float = 0.05
+) -> Tuple[float, float, float, float]:
     r, p = pearsonr(x, y)
     n = len(x)
     if n < 4:
-        raise ValueError(
-            "n must be >= 4"
-        )
-        
+        raise ValueError("n must be >= 4")
+
     # fisher z transformation
     z = np.arctanh(r)
     se = 1 / np.sqrt(n - 3)
-    z_critical = norm.ppf(1 - alpha / 2)  
+    z_critical = norm.ppf(1 - alpha / 2)
     z_lower = z - z_critical * se
     z_upper = z + z_critical * se
     r_lower = np.tanh(z_lower)
@@ -127,9 +128,7 @@ def analyze_correlations_fisher(
             x = data[demo_col]
             y = data[model_col]
             try:
-                correlation, p_value, ci_lower, ci_upper = fisher_z_transformation(
-                    x, y
-                )
+                correlation, p_value, ci_lower, ci_upper = fisher_z_transformation(x, y)
             except Exception as e:
                 print(
                     f"fisher z transformation failed for {demo_col} and {model_col}. error: {str(e)}"
@@ -149,9 +148,7 @@ def analyze_correlations_fisher(
                 }
             )
     if not results:
-        print(
-            f"no valid results for {method} method."
-        )
+        print(f"no valid results for {method} method.")
         return pd.DataFrame()
 
     results_df = pd.DataFrame(results)
@@ -160,6 +157,7 @@ def analyze_correlations_fisher(
     results_df["significant"] = results_df["p_corrected"] < 0.05
     print(f"all correlations were significant: {results_df['significant'].all()}")
     return results_df
+
 
 ### main function ###
 def main():
@@ -174,13 +172,14 @@ def main():
     all_results = []
     for dataset_name in args.dataset_names:
         df = pd.read_csv(args.data_dir / f"{dataset_name}_human_all_models.csv")
-        results = analyze_correlations_fisher(dataset_name, df, args.models, args.method)
+        results = analyze_correlations_fisher(
+            dataset_name, df, args.models, args.method
+        )
         # results.to_csv(output_dir / f"{dataset_name}_human_vs_model.csv", index=False)
         all_results.append(results)
     all_results = pd.concat(all_results)
     all_results.to_csv(args.output_dir / "human_vs_model.csv", index=False)
-    
+
+
 if __name__ == "__main__":
     main()
-    
-    

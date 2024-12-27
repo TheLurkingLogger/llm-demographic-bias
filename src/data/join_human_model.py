@@ -6,8 +6,14 @@ from typing import List
 
 
 class JoinHumanModel:
-    def __init__(self, human_ground_truth: Path, model_base_path: Path, 
-                 model_names: List[str], dataset: str, output_file: Path):
+    def __init__(
+        self,
+        human_ground_truth: Path,
+        model_base_path: Path,
+        model_names: List[str],
+        dataset: str,
+        output_file: Path,
+    ):
         self.human_ground_truth = human_ground_truth
         self.model_base_path = model_base_path
         self.model_names = model_names
@@ -15,26 +21,26 @@ class JoinHumanModel:
         self.output_file = output_file
 
     def get_model_paths(self):
-        return [self.model_base_path / f"{self.dataset}_{model}.csv" 
-                for model in self.model_names]
+        return [
+            self.model_base_path / f"{self.dataset}_{model}.csv"
+            for model in self.model_names
+        ]
 
     def load_data(self):
         human_ground_truth_df = pd.read_csv(self.human_ground_truth)
         model_dfs = []
-        
+
         for model_name, model_path in zip(self.model_names, self.get_model_paths()):
             df = pd.read_csv(model_path)
             model_dfs.append(df[["post", f"{model_name}_cot"]])
-            
+
         return human_ground_truth_df, model_dfs
 
     def merge_data(self, human_ground_truth_df, model_dfs):
         merged_df = human_ground_truth_df
-        
+
         for model_df in model_dfs:
-            merged_df = pd.merge(
-                merged_df, model_df, on="post", how="outer"
-            )
+            merged_df = pd.merge(merged_df, model_df, on="post", how="outer")
         return merged_df
 
     def labels_to_int(self, merged_df):
@@ -70,7 +76,7 @@ def main():
     )
     parser.add_argument(
         "--model_names",
-        nargs='+',
+        nargs="+",
         required=True,
     )
     parser.add_argument(
@@ -79,21 +85,21 @@ def main():
         required=True,
     )
     parser.add_argument(
-        "--output_file", 
-        type=Path, 
+        "--output_file",
+        type=Path,
         required=True,
     )
-    
+
     args = parser.parse_args()
-    
+
     merger = JoinHumanModel(
         args.human_ground_truth,
         args.model_base_path,
         args.model_names,
         args.dataset,
-        args.output_file
+        args.output_file,
     )
-    
+
     human_ground_truth_df, model_dfs = merger.load_data()
     merged_df = merger.merge_data(human_ground_truth_df, model_dfs)
     merged_df = merger.labels_to_int(merged_df)

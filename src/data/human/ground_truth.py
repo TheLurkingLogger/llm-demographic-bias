@@ -60,7 +60,9 @@ class GroundTruth:
                 raise ValueError("Invalid method. Choose 'majority' or 'average'.")
 
             by_demo = (
-                df_[["post_id", "post", "worker_label", "race", "gender"]]  # Added "post" here
+                df_[
+                    ["post_id", "post", "worker_label", "race", "gender"]
+                ]  # Added "post" here
                 .melt(id_vars=["post_id", "post", "worker_label"])  # Added "post" here
                 .groupby(["post_id", "post", "value"])  # Added "post" here
                 .worker_label.agg(agg_func)
@@ -75,10 +77,14 @@ class GroundTruth:
                 .rename(columns={"worker_label": "overall"})
             )
 
-            ground_truth = by_demo.pivot(index=["post_id", "post"], columns="value")["worker_label"]  # Added "post" here
+            ground_truth = by_demo.pivot(index=["post_id", "post"], columns="value")[
+                "worker_label"
+            ]  # Added "post" here
             ground_truth = ground_truth.reset_index()
 
-            ground_truth = ground_truth.merge(overall, on=["post_id", "post"])  # Added "post" here
+            ground_truth = ground_truth.merge(
+                overall, on=["post_id", "post"]
+            )  # Added "post" here
 
             ground_truth.columns = [
                 f"{method}_{col}" if col not in ["post_id", "post"] else col
@@ -86,18 +92,19 @@ class GroundTruth:
             ]
 
             ground_truth_dfs.append(ground_truth)
-            
+
         # Merge the results from both methods
         final_ground_truth = ground_truth_dfs[0].merge(
-            ground_truth_dfs[1], 
-            on=["post_id", "post"]  # Added "post" here
+            ground_truth_dfs[1], on=["post_id", "post"]  # Added "post" here
         )
-        
+
         # Reorder columns to have post_id and post first
         cols = final_ground_truth.columns.tolist()
-        cols = ["post_id", "post"] + [col for col in cols if col not in ["post_id", "post"]]
+        cols = ["post_id", "post"] + [
+            col for col in cols if col not in ["post_id", "post"]
+        ]
         final_ground_truth = final_ground_truth[cols]
-        
+
         self.logger.info("Ground truth computation completed")
         return final_ground_truth
 

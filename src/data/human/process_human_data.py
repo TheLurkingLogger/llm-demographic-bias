@@ -5,6 +5,7 @@ import data_summary
 from pathlib import Path
 import argparse
 
+
 def load_datasets(data_path, datasets):
     datasets_summary_dict = {}
 
@@ -42,6 +43,7 @@ def load_datasets(data_path, datasets):
 
     return datasets_summary_dict
 
+
 def main():
     parser = argparse.ArgumentParser(description="Process and summarize datasets.")
     parser.add_argument(
@@ -69,6 +71,7 @@ def main():
         print("Summary generated successfully.")
     else:
         print("No datasets were successfully loaded. Summary generation skipped.")
+
 
 if __name__ == "__main__":
     main()

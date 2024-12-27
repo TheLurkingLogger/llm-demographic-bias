@@ -102,7 +102,7 @@ class ModelResponsesAggregator:
 
     def validate_model_label(self, df):
         df = df.copy()
-        
+
         initial_rows = len(df)
         column_name = f"{self.model_name}_{self.prompt_type}"
 
@@ -111,20 +111,20 @@ class ModelResponsesAggregator:
                 if isinstance(value, str):
                     value = float(value)  # handle cases like '1.0'
                 if isinstance(value, float) and value.is_integer():
-                    value = int(value)  
+                    value = int(value)
                 elif isinstance(value, (float, int)):
-                    value = int(value) 
+                    value = int(value)
                 else:
-                    return None  
+                    return None
 
                 # if valid range
                 if 1 <= value <= self.label_levels:
-                    return value  
+                    return value
                 else:
-                    return None  
+                    return None
 
             except (ValueError, TypeError):
-                return None  
+                return None
 
         df.loc[:, column_name] = df[column_name].apply(convert_and_validate)
 
@@ -157,7 +157,9 @@ class ModelResponsesAggregator:
             self.logger.info(
                 f"Switching labels 1 and 3 for dataset: {self.dataset_name}"
             )
-            df.loc[:, column_name] = df[column_name].astype(int).replace({1: 3, 3: 1}).astype(int)
+            df.loc[:, column_name] = (
+                df[column_name].astype(int).replace({1: 3, 3: 1}).astype(int)
+            )
 
         return df
 

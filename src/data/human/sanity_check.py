@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def check_valid_labels(df, max_label):
     df["worker_label"] = pd.to_numeric(df["worker_label"], errors="coerce")
     df = df.dropna(subset=["worker_label"])
@@ -8,6 +9,7 @@ def check_valid_labels(df, max_label):
     df["worker_label"] = df["worker_label"].astype(int)
 
     return df
+
 
 def drop_duplicate_annotations(df):
     initial_count = len(df)
@@ -19,8 +21,9 @@ def drop_duplicate_annotations(df):
 
     return df_unique
 
+
 def check_worker_consistency(df):
-    # Group by worker_id and check if gender and race are consistent
+    # check if gender and race are consistent
     worker_consistency = df.groupby("worker_id").agg(
         {"gender": "nunique", "race": "nunique"}
     )

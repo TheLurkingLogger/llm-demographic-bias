@@ -18,6 +18,7 @@ TARGET_COLS = [
     "annotator_race_latinx",
 ]
 
+
 def get_mhsc(dataset_name="mhsc"):
 
     dataset = datasets.load_dataset("ucberkeley-dlab/measuring-hate-speech")
@@ -49,9 +50,14 @@ def get_mhsc(dataset_name="mhsc"):
     df = df[df["race"].isin(VALID_RACE) & df["gender"].isin(VALID_GENDER)]
 
     df["worker_label"] = df["worker_label"].map(LABEL_MAP)
-    post2id = dict((post, f"{dataset_name}_{idx}") for idx, post in enumerate(df["post"].unique()))
+    post2id = dict(
+        (post, f"{dataset_name}_{idx}") for idx, post in enumerate(df["post"].unique())
+    )
     df["post_id"] = df["post"].map(post2id)
-    worker2id = dict((worker, f"{dataset_name}_{idx}") for idx, worker in enumerate(df["worker_id"].unique()))
+    worker2id = dict(
+        (worker, f"{dataset_name}_{idx}")
+        for idx, worker in enumerate(df["worker_id"].unique())
+    )
     df["worker_id"] = df["worker_id"].map(worker2id)
     df["dataset"] = dataset_name
 
@@ -62,13 +68,16 @@ def get_mhsc(dataset_name="mhsc"):
     df = drop_outlier(df)
 
     assert df.isnull().sum().sum() == 0, "Null values found in the dataset"
-    assert df[["post_id", "worker_id"]].duplicated().sum() == 0, "Duplicate annotations detected"
+    assert (
+        df[["post_id", "worker_id"]].duplicated().sum() == 0
+    ), "Duplicate annotations detected"
 
     save_path = Path("../../data/human/processed/mhsc.csv")
     os.makedirs(save_path.parent, exist_ok=True)
     df.to_csv(save_path, index=False)
 
     return df
+
 
 def get_race(row):
     if row["annotator_race_white"] == 1:
@@ -81,12 +90,13 @@ def get_race(row):
         return "hispanic"
     return "unknown"
 
+
 def drop_outlier(df):
     """
     In the MHSC dataset, there are some posts with a large number of annotations (e.g. 100+).
-    Less than 0.1% of the posts have more than 6 annotations. There is a big jump from 6 to 3-digit annotations.
-    Upon analyzing the distribution of the number of annotations per post, the upper bound was set to 6 annotations per post.
+    Less than 0.1% of the posts have more than 5 annotations. There is a big jump from 5 to 3-digit annotations.
+    Upon analyzing the distribution of the number of annotations per post, the upper bound was set to 5 annotations per post.
     """
     post_counts = df["post_id"].value_counts()
-    outlier_posts = post_counts[post_counts > 6].index
+    outlier_posts = post_counts[post_counts > 5].index
     return df[~df["post_id"].isin(outlier_posts)]
