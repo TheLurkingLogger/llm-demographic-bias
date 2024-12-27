@@ -1,6 +1,5 @@
 DATA_PATH=../../data/human/processed/
-# DATASETS="awa mhsc nlpos popq"
-DATASETS="awa"
+DATASETS="awa mhsc nlpos popq sbic"
 
 python3 ../data/human/process_human_data.py \
     --data_path $DATA_PATH \
